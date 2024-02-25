@@ -196,3 +196,154 @@ Acoplamento
 Acoplamento é a dependência entre classes
 Acoplamento nem sempre é ruim, e que é impossível criar um sistema sem nenhum acoplamento
 Devemos controlar o nível de acoplamento na nossa aplicação (falaremos mais sobre isso)
+
+#### 25/02/2024
+
+@02-Melhorando a coesão
+
+@@01
+Extraindo o feedback
+
+[00:00] Olá, pessoal. Bem-vindos a mais um capítulo desse nosso treinamento de SOLID e boas práticas de Orientação a Objetos, e já demos uma passada bem rápida em alguns conceitos muito importantes da Orientação a Objetos e vimos que nosso projeto, embora tenha parte boas, não é de todo ruim, tem alguns pontos que merecem uma certa atenção, merecem melhorias.
+[00:22] Primeiro, vamos pegar aqui nossa classe Curso e ver algumas regras que ela tem. Ela tem o meu construtor, ela define o nome e inicializa aqui dois arrays. Recuperar vídeos é só um getter. Adicionar vídeo já tem alguma regra.
+
+[00:40] Essa regra indica que os vídeos para fazerem partes de um curso precisam ter pelo menos 3 minutos, isso é uma regra do curso, faz sentido. Agora, receber feedback. Eu estou recebendo uma nota e um possível depoimento que não é obrigatório.
+
+[00:59] Mas, se a nota for menor que 9, e o depoimento estiver vazio eu vou lançar um erro, ou seja, com uma nota menor que 9 o depoimento é obrigatório para eu receber feedback, e isso é uma regra, como eu estou dizendo, de um feedback. Isso é uma validação de feedback, não é uma validação de curso.
+
+[01:18] Um curso continua válido independente de qual feedback ele recebe. Um curso tem suas regras intactas, independente do feedback que ele recebe. Agora, o feedback para ser válido ele tem essas regras. Então aqui, isso é um forte candidato para estar em outro lugar e não dentro da classe Curso. Por isso, vamos criar agora uma classe chamada feedback. Vou criar aqui uma nova classe, feedback.
+
+[01:46] Vou remover o comentário /* Created by PhpStorm. …/.
+
+[01:50] Aqui no Contrutor e no PhpStorm eu posso digitar underline underline, começar a digitar Construtor, quando eu teclo “enter” ele já cria para mim eu posso dizer que recebo uma nota e um depoimento opcional. Isso aqui vai caracterizar o nosso feedback.
+
+[02:08] Vou apertar “Alt + enter” e vir em “Initialize Fields”, seleciono os dois, clico em “OK” e ele já inicializa aqui para nós. Vou colocar tudo isso em uma linha só.
+
+[02:21] Se em algum momento desse treinamento você já estiver utilizando o PHP 7.4 você pode remover os comentários /** @var int */ e /** @var string|null */, porque o PHP 7.4 já permite essa sintaxe, já permite as propriedades tipadas. Mas como eu ainda estou utilizando o 7.3 eu ainda não posso utilizar essa feature.
+
+[02:39] Tenho aqui, agora, um feedback já bem definido. Agora eu já tenho a validação na classe correta. Se eu precisar em algum lugar de pegar nota ou pegar depoimento, eu crio aqui um getDepoimento, um getNota, e aí eu consigo utilizar, mas a regra de validação de um feedback, a responsabilidade de garantir que um feedback está válido ou não vai ficar aqui.
+
+[03:04] Mas você ainda não implementou validação nenhuma, então vamos mover if ($nota < 9 && empty($depoimento) ) {throw new \ DomainException (message: ‘Depoimento Obrigatório’);} de Curso para Feedback. Se a minha nota for menor do que 9 e eu não tiver um depoimento: erro. O depoimento é obrigatório. Eu nem consigo criar esse feedback, caso contrário.
+
+[03:22] Com isso, já temos a regra de validação implementada na classe correta, então não preciso mais receber int $nota, $string $depoimento separadamente nem fazer nenhuma validação, eu posso simplesmente receberFeedback, e aqui na nossa rede de feedback s eu adiciono esse $feedback.
+
+[03:40] Agora, olha só como a nossa classe Curso está bem mais enxuta e não tem a responsabilidade da validação de um feedback . Se em algum momento a regra de Feedback mudar, por exemplo, agora o depoimento só é obrigatório se a nota for menor que 7, isso não vai afetar em nada a nossa classe Curso.
+
+[03:58] Ela vai continuar funcionando perfeitamente sem nenhum problema. Com isso, eu reduzo esses problemas de se uma regra mudar, quais classes têm que ser alteradas, se outra classe precisar receber um feedback , eu já tenho a regra implementada, eu não preciso duplicar esse código.
+
+[04:14] Então, esse conceito, esse princípio de manter cada classe com a sua responsabilidade tem um nome, e eu vou falar mais sobre esse princípio no próximo vídeo.
+
+@@02
+Extraindo classe
+
+No último vídeo, executamos uma refatoração conhecida como Extrair classe.
+O que é uma refatoração?
+
+É uma alteração no código para corrigir bugs
+ 
+Alternativa correta
+É uma alteração no código que visa melhorar sua clareza e entendimento
+ 
+Alternativa correta! Refatorações servem para melhorar o design do código, e não o funcionamento do sistema. Uma refatoração não deve influenciar em nada no funcionamento.
+Alternativa correta
+É uma alteração no código que visa a melhoria de performance
+
+@@03
+Single Responsibility Principle
+
+[00:00] Olá, pessoal. Sejam muito bem-vindos de volta, e o que implementamos no último vídeo, aquela refatoração que fizemos tem um nome, e esse nome é Single Responsibility Principle, ou Princípio de Responsabilidade Única. Aqui tem uma imagem engraçada de um canivete suiço com esteróides e uma legenda.
+[00:22] Só porque você pode, só porque você consegue, não significa que você deve.
+
+[00:27] Trazendo isso para código, trazendo isso para desenvolvimento de software, só porque você pode criar todo o seu programa em um único arquivo, não significa que você deve fazer isso. Imagina dar manutenção para isso.
+
+[00:41] Você provavelmente já pegou um arquivo gigante e precisava mudar uma linha e ficou horas procurando essa linha. Esse é o problema que o Princípio da Responsabilidade Única tenta resolver, tenta mitigar utilizando o Princípio da Coesão.
+
+[00:59] Esse princípio, esse nome dado ao Princípio da Coesão e Responsabilidade Única foi dado por uma das grandes mentes de desenvolvimento de software, Robert C. Martin, o tio Bobby, o uncle Bobby, como é mais conhecido. A frase utilizada por ele para definir esse princípio é que uma classe deve ter um, e apenas um, motivo para mudar, para ser reescrita.
+
+[01:25] Isso quer dizer que, por exemplo, uma classe que monta um relatório e exibe ele na tela tem dois motivos para mudar. Como assim, dois? Primeiro, se os dados que vão ser exibidos mudarem, essa classe vai precisar mudar, provavelmente.
+
+[01:41] E se o formato desse relatório mudar, ou seja, se eu precisar mudar de CSV para Json, essa classe também vai precisar mudar. Com isso, começamos a pensar nos motivos para uma classe mudar e com isso ir separando em classes menores.
+
+[01:56] Voltando para o nosso projeto, nossa classe Curso tinha mais de uma razão para mudar. Primeiro, se a regra de quantos minutos um vídeo pode ter mudasse e se a regra de qual nota, a partir de qual nota o depoimento é obrigatório ou não mudasse. Agora, ela só tem um motivo para mudar, se a nossa regra do curso mudar e eu ia precisar mexer nessa classe.
+
+[02:26] Caso contrário, se a regra para feedback mudar não importa mais para essa classe, ela não vai ser alterada. E a nossa classe Feedback tenha também só um motivo para mudar, se a regra referente ao feedback , se a regra referente ao depoimento ser obrigatório ou não mudar, e aí eu vou precisar mudar essa classe.
+
+[02:43] Com isso, acatamos, vamos dizer assim, o princípio da responsabilidade única com uma simples implementação, com uma simples refatoração e as vantagens são imensas.
+
+[02:55] Agora que já definimos muito bem isso, o que é o Princípio da Responsabilidade Única e como aplicar na prática, vou te dar outro exemplo, muito famoso, onde eu tenho a classe Pessoa, ou a classe Post, de blog, e essa classe, além de representar seus dados, ela também sabe se salvar no banco de dados.
+
+[03:18] E esse padrão chamado Active Record se foi implementado dessa mesma forma que eu descrevi, onde essa mesma classe representa seus dados e salva seus dados, ela está violando o Princípio de Responsabilidade Única.
+
+[03:32] Se os meus dados mudarem, eu preciso alterar essa classe. Se a minha forma de persistência mudar, se eu mudar o banco de dados, se minha tabela for alterada, eu também preciso mudar essa classe. Isso aumenta, como eu comentei no primeiro capítulo, a possibilidade de inserir novos bugs, alterando o código que já funcionava anteriormente.
+
+[03:50] Tendo entendido esse conceito, tendo pegado os exemplos, está na hora de pensarmos como estender o nosso projeto, por exemplo, eu tenho aqui um CalculadorPontuacao, e eu tenho a pontuação por um curso, a pontuação para o Alura+. Agora imagina se eu tiver um novo modelo de conteúdo, eu tenho que adicionar aqui um outro else if.
+
+[04:11] E se eu tiver outro conteúdo, outro else if. Então essa classe CalculadoraPontuacao nunca vai parar de crescer, então vamos conversar sobre alguma forma de modificar isso, de garantir que ela esteja coesa e seja extensível no próximo capítulo.
+
+@@04
+Definição de SRP
+
+Ao extrair uma nova classe, vimos que agora temos classes com menos responsabilidades, o que facilita na manutenção. Esse é o conceito de Single Responsibility Principle.
+Qual é a definição mais formal do princípio de responsabilidade única?
+
+Uma classe deve fazer bem tudo que se propõe a fazer
+ 
+Alternativa correta
+Uma classe (ou módulo, função, etc) deve ter um e apenas um motivo para mudar
+ 
+Alternativa correta! Esta é uma das definições mais conhecidas do SRP (Single Responsibility Principle).
+Alternativa correta
+Uma classe deve ter apenas uma funcionalidade e não deve servir para mais nada
+
+@@05
+Consolidando o seu conhecimento
+
+Chegou a hora de você pôr em prática o que foi visto na aula. Para isso, execute os passos listados abaixo.
+1) No projeto baixado na aula anterior, crie um novo arquivo na pasta Model, chamado Feedback.php, com o seguinte conteúdo:
+
+<?php
+
+namespace Alura\Solid\Model;
+
+class Feedback
+{
+    private $nota;
+    private $depoimento;
+
+    public function __construct(int $nota, ?string $depoimento)
+    {
+        if ($nota < 9 && empty($depoimento)) {
+            throw new \DomainException('Depoimento obrigatório');
+        }
+
+        $this->nota = $nota;
+        $this->depoimento = $depoimento;
+    }
+
+    public function recuperarNota(): int
+    {
+        return $this->nota;
+    }
+
+    public function recuperarDepoimento(): ?string
+    {
+        return $this->depoimento;
+    }
+}COPIAR CÓDIGO
+2) Na classe Curso, edite o método receberFeedback, para que ele não receba mais os dois parâmetros originais, e sim receba apenas um Feedback:
+
+public function receberFeedback(Feedback $feedback): void
+{
+    $this->feedbacks[] = $feedback;
+}COPIAR CÓDIGO
+
+Continue com os seus estudos, e se houver dúvidas, não hesite em recorrer ao nosso fórum!
+
+@@06
+O que aprendemos?
+
+Nesta aula, aprendemos:
+Que classes/métodos/funções/módulos devem ter uma única responsabilidade bem definida
+Que, segundo o Princípio de Responsabilidade Única (SRP), uma classe deve ter um e apenas um motivo para ser alterada
+Como realizar uma refatoração no nosso sistema
+Como extrair uma classe
