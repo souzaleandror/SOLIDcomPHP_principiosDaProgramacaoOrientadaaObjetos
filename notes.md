@@ -501,3 +501,155 @@ Que cada classe deve conhecer e ser responsável por suas próprias regras de ne
 Que o princípio Aberto/Fechado (OCP) diz que um sistema deve ser aberto para a extensão, mas fechado para a modificação
 Isso significa que devemos poder criar novas funcionalidades e estender o sistema sem precisar modificar muitas classes já existentes
 Uma classe que tende a crescer "para sempre" é uma forte candidata a sofrer alguma espécie de refatoração
+
+#### 26/02/2024
+
+@04-Quebra de confiança
+
+@@01
+Projeto da aula anterior
+
+Caso queira, você pode baixar aqui o projeto do curso no ponto em que paramos na aula anterior.
+
+https://caelum-online-public.s3.amazonaws.com/1315-php-solid/03/aula-3-completa.zip
+
+@@02
+Corrigindo URLs
+
+[00:00] Olá, pessoal. Sejam muito bem-vindos de volta a mais um capítulo desse treinamento de SOLID. Já vimos aqui o Princípio de Responsabilidade Única, onde um módulo, uma construção do software, deve ter um e apenas um motivo para mudar.
+[00:14] Vimos o Princípio de Aberto/Fechado, onde o módulo, um conjunto de classes, deve ser aberto para extensão, mas fechado para modificação. Agora eu quero conversar com vocês sobre uma modificação muito simples, mas para exemplificar um conceito bem complexo um princípio bem complexo.
+
+[00:33] Dando uma olhada aqui na nossa classe AluraMais, vemos que ela extends Video, porque a AluraMais, o conteúdo AluraMais, nada mais é que um vídeo que possui uma categoria. Isso eu estou dizendo aqui no modelo que estamos criando, o nosso modelo fictício da Alura.
+
+[00:49] Não estou falando que de verdade é só isso, mas no nosso modelo aqui um conteúdo da AluraMais nada mais é do que um vídeo que possui uma categoria. só que existe uma diferença na hora de recuperarUrl.
+
+[01:05] A URL da AluraMais possui o conteúdo da sua categoria, na verdade, a implementação está até errada, era para depois da categoria ter o nome também, mas vamos focar aqui em outro detalhe. Na AluraMais ,na URL, temos a categoria. Agora, no vídeo temos http_build_query ([‘nome’ => $this->nome]);. São modelos diferentes de URL, só que repara que aqui no Video eu estou devolvendo uma URL válida http://videos.alura.com.br , um domínio que eu coloquei aqui aleatoriamente.
+
+[01:47] Agora, aqui na “AluraMais”, estamos devolvendo uma string, então assinatura do método está correto eu não estou quebrando o contrato com minha classe base, mas eu não estou devolvendo uma URL eu estou devolvendo uma string qualquer. Se a categoria fosse "boas práticas", por exemplo, eu estaria devolvendo’boas-práticas’.
+
+[02:12] Então estamos meio que devolvendo algo que quem está utilizando, quem espera um vídeo se receber uma instância de AluraMais não vai saber resolver, não vai saber, por exemplo, mandar esse usuário para a URL correta, porque não temos uma URL aqui.
+
+[02:28] É uma solução muito simples, eu posso simplesmente colocar a URL return ‘http://vídeos.alura.com.br’ na classe AluraMais, e com isso já resolvo essa quebra de contrato. Mas repara que essa quebra de contrato não está acontecendo realmente baseado na interface do nosso método, na assinatura do nosso método, está acontecendo baseado na implementação, ou seja, na forma como recuperarUrl funciona.
+
+[02:55] Eu espero que um vídeo, ao chamar o método recuperarUrl de um vídeo, espero que ele me devolva uma URL contendo o caminho para o vídeo. E se a AluraMais é um vídeo, eu não posso quebrar essa confiança de quem depende de um vídeo, porque, deixa eu criar um novo arquivo temporário.
+
+[03:18] Imagina que eu tenho aqui uma função qualquer, vamos dizer function (), e nessa function eu recebo um vídeo, um vídeo qualquer, e aqui eu quero fazer, eu quero redirecionar o usuário Location para a URL desse vídeo. Então, $vídeo->recuperarUrl() );. Esse código deve funcionar, porque eu sei que o recuperarUrl me retorna uma URL válida.
+
+[03:58] Agora, se eu vier aqui, faltou o nome da função: function redirecionar. Se eu vier aqui e passar, se eu chamar redirecionar (new \Alura\Solid\Model\AluraMais (nome: ‘Open closed’, categoria ‘Boas praticas’, esse código, deixa eu quebrar a linha aqui para você ver melhor, esse código é totalmente funcional.
+
+[04:33] De certa forma porque a AluraMais é do tipo vídeo, então a função function redirecionar vai receber sem problema, e recuperarUrl está retornando uma string, então aqui não vou receber erro nenhum. Só que o comportamento vai ser inesperado porque eu não estou devolvendo a URL completa .
+
+[04:51] Então, se eu estiver executando esse código em outro domínio, eu posso ter um resultado inesperado, posso ter um redirecionamento para página errada, enfim eu estou proporcionando um comportamento inesperado na minha aplicação. Isso porque a implementação da minha classe filha, da minha classe derivada de Video.
+
+[05:10] Ou seja, implementação de AluraMais não seguiu as mesmas diretrizes e quebrando isso, quebramos a confiança de quem está utilizando a nossa classe, podemos introduzir bugs. E isso obviamente, esse respeito à implementação, é um princípio que tem nome e vamos discutir ele com alguns exemplos que talvez deixem isso pouco mais claro no próximo vídeo.
+
+@@03
+Herança
+
+Sabemos que, ao estender uma classe através da herança, devemos sempre respeitar os contratos (interfaces) de seus métodos.
+Por que nossa classe AluraMais estava estendendo de forma indesejada um comportamento?
+
+Porque não estava respeitando o tipo de retorno do método
+ 
+Alternativa correta
+Porque não estava respeitando o número e tipos dos argumentos
+ 
+Alternativa correta
+Embora a assinatura do método estivesse correta, o comportamento era diferente da classe base
+ 
+Alternativa correta! O método da classe filha não recebia parâmetros e retornava uma string, assim como o método da classe base. O problema era no domínio. Enquanto a classe base devolvia uma URL, a classe filha devolvia uma string comum. Isso poderia levar a comportamentos indesejados e bugs.
+
+@@04
+Liskov Substitution Principle
+
+00:00] Olá pessoal. Bem-vindos de volta, e no último vídeo fizemos uma implementação simples, porque eu disse que seria um princípio complexo. Esse princípio é chamado de Princípio de Substituição de Liskov.
+[00:13] Liskov foi uma mulher, eu vou explicar um pouco melhor, mas ela disse que se, seja q(x) uma propriedade que se pode provar do objeto x do tipo T. Então q(y) também é possível provar para o objeto y do tipo S, sendo S um subtipo de T. Essa foi a frase dita pela Barbara Liskov.
+
+[00:35] O que ela acabou de falar? Não entendi absolutamente nada. Pois é, eu também não entendi nada, mas tentando traduzir é basicamente isso: classes filhas nunca devem infringir definições de tipo ou de funcionalidade da classe pai, da classe base, e o exemplo dado aqui é:
+
+[00:55] se parece um pato, se faz o barulho do pato, mas precisa de bateria, então talvez se tenha a abstração errada, e provavelmente isso não é um pato, isso é um brinquedo, é alguma coisa diferente, não é um pato propriamente dito.
+
+[01:09] E o exemplo mais clássico que existe da violação do Princípio de Substituição de Liskov é as classes Retangulo e Quadrado. Eu tenho aqui uma classe Retangulo que tem altura e largura, criei aqui os setters para essas duas propriedades, e eu tenho um método que calculaArea, e a área de um retângulo é this->altura * $this ->largura.
+
+[01:36] E geometricamente falando o que é um quadrado? Um quadrado é um retângulo que tem altura e largura iguais. Então posso dizer que ‘class Quadrado extends Retangulo` e quando eu defino a altura, eu defino também a largura com o mesmo valor. Se eu defino a largura eu defino também a altura com o mesmo valor.
+
+[01:56] Parece tudo certo, então tenho aqui criei um new Retangulo () e defini altura defineAltura (5);defineLargura (10). Se calculaArea, eu espero que seja 50, e se eu executar este script eu tenho 50.
+
+[02:12] Agora, se eu trocar new Retangulo para new Quadrado, o que acontece? Eu recebo 100 como retorno. Ou seja, eu estou quebrando aqui a definição da minha classe base, da minha classe mãe, minha classe pai, como você preferir chamar que diz que eu tenho duas propriedades com valores diferente.
+
+[02:32] Eu estou quebrando esse contrato, e por mais que a assinatura dos métodos esteja correto, a implementação está causando um comportamento inesperado.
+
+[02:40] É exatamente a mesma coisa que a vivenciamos com a classe AluraMais, onde ela estava ela estava retornando uma string, ou seja, o tipo está correto, mas a implementação estava errada, e o exemplo de Quadrado e Retangulo é o mais clássico se você pesquisar Princípio de Substituição de Liskov, esse exemplo mais clássico que você vai encontrar.
+
+[03:03] Sempre precisa fazer com que as classes derivadas, as classes filhas, respeitem qualquer definição imposta pelas classes bases, pelas classes mãe, ou seja se Retangulo diz que eu tenho duas propriedades com valores diferentes, eu não posso simplesmente, deliberadamente, definir o valor delas como igual quando eu bem entender.
+
+[03:23] Se eu tenho minha classe pai definindo minha, classe mãe definindo, que eu devolva uma URL, eu não posso simplesmente vir aqui devolver uma string qualquer. Isso pode causar comportamentos inesperados
+
+[03:38] Então basicamente o que toda essa frase de Liskov quis dizer é se eu estou esperando um objeto de determinado tipo seja x ,do tipo T , e eu receber um objeto do tipo y sendo que esse y é do tipo S, e S é um subtipo de T, ou seja basicamente é, se eu receber uma instância de S sendo S filho de T, eu preciso ter o mesmo resultado, eu preciso receber o mesmo resultado de qualquer operação desses subtipos, dessa classe filha, dessa classe derivada.
+
+[04:15] Então, além de respeitar os tipos, isso, a compilação, o processo de execução do programa, já garante para nós, ou seja, se eu definir aqui que o meu vídeo retorna uma string eu não posso vir aqui na AluraMais e retornar um inteiro isso não funciona, e o PhpStorm já diz que não funciona.
+
+[04:34] Então, a definição de tipo já é cuidada para nós, já é tratado para nós, sem que precise conhecer esse princípio, mas a implementação fica por nossa conta, garantir que devolva o que o usuário espera fica por nossa conta.
+
+[04:48] Esse é o Princípio de Substituição de Liskov, ele diz que eu posso a qualquer momento substituir uma classe base por qualquer uma de suas derivadas e eu não vou receber um comportamento inesperado. Esse, como eu falei, é um princípio muito complexo. Você pode parar com calma, rever esses dois vídeos, pesquisar um pouco mais, depois voltar nos exercícios, mas é um princípio que se ferirmos podemos causar muitos bugs indesejáveis. Então, é bem interessante que você estude com bastante calma esse princípio.
+
+[05:19] Te espero no próximo capítulo para entender um pouco melhor sobre quando o acoplamento é interessante, quando não é, e como fazer com que o acoplamento trabalhe a nosso favor.
+
+@@05
+Mudando o comportamento de um método
+
+Vimos que não só as assinaturas dos métodos devem ser respeitadas, mas também o seu comportamento intrínseco.
+Por que não podemos mudar o comportamento de um método de uma classe que pode ser estendida?
+
+Porque se não, geraremos um erro de compilação/interpretação
+ 
+Alternativa correta
+Porque, segundo o Princípio de Substituição de Liskov, uma classe base deve poder ser substituída por suas classes filhas em qualquer lugar do código
+ 
+Alternativa correta! Se algum código depende de uma classe, qualquer classe que a estenda deve poder ser utilizada no lugar. Com isso, se um comportamento for alterado no método, resultados inesperados podem ocorrer.
+Alternativa correta
+Porque contratos foram feitos para ser respeitados
+ 
+Alternativa errada! Esta resposta é um "porque sim" mais bonito, e isso não deve ser uma resposta aceitável.
+
+@@06
+Consolidando o seu conhecimento
+
+Chegou a hora de você pôr em prática o que foi visto na aula. Para isso, execute os passos listados abaixo.
+1) No método recuperarUrl, da classe AluraMais, adicione o domínio ao retorno:
+
+public function recuperarUrl(): string
+{
+    return 'http://videos.alura.com.br/' . str_replace(' ', '-', strtolower($this->categoria)) . '/' . str_replace(' ', '-', strtolower($this->nome));
+}COPIAR CÓDIGO
+2) (Opcional) Crie uma classe chamada Slug (ou um nome que você acredite fazer mais sentido), com o seguinte conteúdo:
+
+<?php
+
+namespace Alura\Solid\Model;
+
+final class Slug
+{
+    private $slug;
+
+    public function __construct(string $conteudo)
+    {
+        $this->slug = str_replace(' ', '-', strtolower($conteudo));
+    }
+
+    public function __toString(): string
+    {
+        return $this->slug;
+    }
+}COPIAR CÓDIGO
+3) (Opcional) Agora, no método recuperarUrl, de Video e AluraMais, utilize a classe Slug nas partes da URL que fizerem sentido.
+
+Continue com os seus estudos, e se houver dúvidas, não hesite em recorrer ao nosso fórum!
+
+@@07
+O que aprendemos?
+
+Nesta aula, aprendemos:
+Que, embora a assinatura de um método esteja sendo respeitada em uma herança, ainda assim podemos estar quebrando algum contrato
+Que o Princípio de Substituição de Liskov (LSP) diz que devemos poder substituir classes base por suas classes derivadas em qualquer lugar, sem problema
+Que não devemos alterar um comportamento de um método estendido, mesmo que a assinatura seja mantida
