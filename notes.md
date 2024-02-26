@@ -347,3 +347,157 @@ Que classes/métodos/funções/módulos devem ter uma única responsabilidade be
 Que, segundo o Princípio de Responsabilidade Única (SRP), uma classe deve ter um e apenas um motivo para ser alterada
 Como realizar uma refatoração no nosso sistema
 Como extrair uma classe
+
+#### 26/02/2024
+
+@03-Trabalhando no acoplamento
+
+@@01
+Projeto da aula anterior
+
+Caso queira, você pode baixar aqui o projeto do curso no ponto em que paramos na aula anterior.
+
+https://caelum-online-public.s3.amazonaws.com/1315-php-solid/02/aula-2-completa.zip
+
+@@02
+Extraindo a pontuação
+
+[00:00] Olá, pessoal. Bem-vindos de volta mais um capítulo desse treinamento de SOLID. Só para recapitular o que fizemos no último capítulo: modificamos nossa classe Curso para que ela passasse a receberFeedback como objeto já montado e todas suas regras já estivessem previamente verificados, previamente definidas. Nessa classe Feedback só teria um __construtct, onde a lógica para garantir que esse feedback é válido seria aplicada.
+[00:27] Implementei aqui, por baixo dos panos, dois métodos de getters, dois métodos acessores, vamos chamar assim, o recuperarNota e o recuperarDepoimento. Que só retornam os valores da nota e do depoimento.
+
+[00:40] Agora, o que eu quero implementar é, eu tenho aqui é um CalculadorPontuacao, e como eu falei essa classe pode crescer infinitamente, conforme eu tenho novos conteúdos na plataforma eu vou precisar ficar modificando essa classe aqui e isso não é bom, sabemos que não.
+
+[00:27] Vamos pensar em uma forma de unificar o que eu estou chamando aqui de $conteúdo. Um conteúdo que pode ser pontuável, vamos dizer assim, que pode ter uma pontuação e definir essa pontuação em cada um dos conteúdos.
+
+[01:10] A primeira coisa que eu vou fazer aqui é definir esse conteúdo unificado, esse pontuável, se há algo que pode ser implementado por outras classes, é uma interface. Então eu vou criar aqui uma nova interface “Pontuavel”.
+
+[01:32] Criada essa interface, deixa eu apagar o comentário /** Created by PhpStorm. …*/, criada a interface, eu vou definir um único método public function, que é recuperaPontuação, e retorna um inteiro. Pode ser ou recuperaPontuação ou somente Pontuação, isso não importa muito, como você preferir.
+
+[01:55] Agora que temos interface “Pontuavel” definida, vamos ver quais conteúdos são pontuáveis aqui. Eu tenho Curso e AluraMais ,por enquanto. Aqui no Curso eu vou implementar a interface Pontuável, “Alt + enter” no PhpStorm e ele já adiciona o método lá no final para mim, e aqui, um curso tem uma pontuação fixa. Todos os cursos têm uma pontuação de 100.
+
+[02:21] Agora, o nosso AluraMais, implementa “Pontuável” “Alt+ enter”, já adicionou embaixo do código. Aqui é um pouco diferente, em um vídeo da AluraMais, a pontuação $this -> minutosDeDuracao () * 2. Tenho aqui a implementação. E agora, eu posso muito bem aqui no meu CalculadorPontuacao receber um conteúdo Pontuável, independente de qual classe for seja Curso, seja AluraMais, qualquer coisa, eu só return $conteudo->recuperaPontucao( ).
+
+[03:00] Aqui no lugar de recupera deveria ser recuperar. Vou dar um “Shift + F6” para o PhpStorm renomear esse método para mim. Recuperar. Repara que ele já modifica em todas as classes que o implementam e já modifica aqui no return também.
+
+[03:19 Isso só para manter os nossos métodos como verbos no infinitivo. É uma boa prática, mas não vou entrar muito em detalhes agora, só um preciosismo da minha parte, vamos dizer assim.
+
+[03:30] Agora, olha só o nosso métodorecuperarPontucao simplesmente delega a chamada para o próprio $conteúdo. Então, preciso dessa classe ainda? Não. Agora não preciso dela mais, ela se fez desnecessária conforme refaturamos o nosso projeto.
+
+[03:47] Agora eu sei que em qualquer lugar que precisar de uma pontuação eu vou precisar de um objeto do tipo “Pontuavel”, seja ele qual for. E aí se futuramente eu tiver, por exemplo, uma classe AluraLive, basta que eu implemente a interface Pontuável e aqui dentro recupero a pontuação baseado nas regras da pontuação da AluraLive,
+
+[04:12] e o nosso CalculadorPontuacao, ou a classe que for que estiver dependendo de algum conteúdo pontuável não vai precisar ser alteráda. Então, com isso, a conseguimos estender o nosso projeto, sem precisar editar código já existente, e isso obviamente tem um nome é um princípio já conhecido que vamos conversar mais no próximo vídeo.
+
+@@03
+Muitos Ifs
+
+Encontramos nesta aula um problema na classe CalculadorPontuacao.
+O que pudemos identificar sobre o problema desta classe?
+
+Esta classe continha muitas responsabilidades
+ 
+Alternativa correta
+Esta classe poderia crescer para sempre
+ 
+Alternativa correta! Enquanto novas formas de conteúdo pontuável fossem criadas, novas condições deveriam ser adicionadas a esta classe, fazendo-a crescer interminavelmente.
+Alternativa correta
+Esta classe violava a lei de Demeter
+
+@@04
+Open Closed Principle
+
+[00:00] Olá, pessoal. Bem-vindos de volta, e no último vídeo deixamos, fizemos com que nosso projeto nosso módulo de pontuação fosse extensível. Ou seja, eu posso agora ter outros conteúdos que sejam pontuáveis que implementem aquela nossa interface “Pontuavel”, mas agora as nossas classes estão fechadas para modificação.
+[00:23] Não precisamos mais modificar alguma classe concreta para estender essa funcionalidade, para adicionar um conteúdo novo e isso é exatamente o que o princípio Open/Closed Principle ou Princípio de Aberto/Fechado quer dizer. Aqui temos uma imagem interessante e uma frase.
+
+[00:43] Open chest surgery is not needed when putting a coat , uma cirurgia de peito aberto não é necessária quando você vai colocar um casaco. Você não precisa expor toda a funcionalidade do seu projeto para uma única ação.
+
+[00:57] Não precisamos expor como a pontuação é implementada, como a pontuação é recuperada simplesmente para pegar pontuação, não precisamos de tanta complicação para uma única implementação simples.
+
+[01:11] Esse princípio de uma forma um pouco mais formalmente explicada, diz que entidades de software, sejam classes, módulos, funções, qualquer coisa, conjunto de classes, devem ser abertas para expansão, porém fechadas para modificação.
+
+[01:24] Bertrand Mayer, que é originalmente citado como autor desse princípio, diz que uma classe, um módulo, um conjunto de classes é dito como aberto quando é possível estender, ou seja, no nosso caso conseguimos criar uma nova classe que implemente Pontuavel e o nosso CalculadorPontuacao, por exemplo, continua utilizando sem modificação nenhuma, sem problema nenhum.
+
+[01:50] Só que esse módulo, classe, conjunto de classes é dito como fechado se ele já pode ser utilizado em outras classes, ou seja, a sua interface foi bem definida, os métodos, a forma de acessar foi bem definida a ponto de ser acessível para outros módulos e outras classes.
+
+[02:08] E justamente isso que a nossa interface “Pontuavel” está fazendo. Definimos uma interface, um método, assinatura de um método, que vai poder ser utilizado em outras classes.
+
+[02:20] Isso faz com que o nosso projeto seja extensível, que consigamos criar novas funcionalidades, novos conteúdos com pontuação, sem que eu precise ficar modificando uma classe adicionando if e isso, como já comentamos, antes pode gerar erros pode gerar bugs, dependendo do nosso projeto.
+
+[02:40] Agora, já vimos dois princípios muito famosos e conhecidos: o Princípio de Single Responsibility ou Princípio de Responsabilidade Única, e agora o Open/Closed Principle, que é o Princípio de Aberto/Fechado. Está na hora de ver um princípio bem interessante e um pouco mais complexo na sua definição formal, mas que a vamos ver que é bem simples quando colocado na prática. Te espero no próximo capítulo para falar sobre isso.
+
+@@05
+Garantindo que o sistema seja extensível
+
+O Open Closed Principle, embora complexo em sua definição, é muito útil e pertinente.
+O que podemos fazer para garantir que nosso sistema seja extensível da forma correta?
+
+Manter poucas classes
+ 
+Alternativa correta
+Garantir que cada ação/responsabilidade esteja na classe correta
+ 
+Alternativa correta! Esta é uma das formas de garantir que o sistema seja extensível.
+Alternativa correta
+Ter certeza de que escolhemos a melhor tecnologia/linguagem de programação
+
+06
+Consolidando o seu conhecimento
+
+Chegou a hora de você pôr em prática o que foi visto na aula. Para isso, execute os passos listados abaixo.
+1) Crie um arquivo chamado Pontuavel.php, na pasta Model, com o seguinte conteúdo:
+
+<?php
+
+namespace Alura\Solid\Model;
+
+interface Pontuavel
+{
+    public function recuperarPontuacao(): int;
+}COPIAR CÓDIGO
+2) Edite a classe AluraMais para que ela implemente a interface recém-criada, da seguinte forma:
+
+class AluraMais extends Video implements PontuavelCOPIAR CÓDIGO
+3) Implemente o método necessário na classe AluraMais:
+
+public function recuperarPontuacao(): int
+{
+    return $this->minutosDeDuracao() * 2;
+}COPIAR CÓDIGO
+4) Edite a classe Curso para que ela também implemente a interface Pontuavel:
+
+<?php
+
+namespace Alura\Solid\Model;
+
+class Curso implements Pontuavel
+{
+    // ...
+
+    public function recuperarPontuacao(): int
+    {
+        return 100;
+    }
+}COPIAR CÓDIGO
+5) Agora, edite a classe CalculadorPontuacao, para que ela dependa apenas desta interface:
+
+<?php
+
+namespace Alura\Solid\Service;
+
+use Alura\Solid\Model\Pontuavel;
+
+class CalculadorPontuacao
+{
+    public function recuperarPontuacao(Pontuavel $conteudo)
+    {
+        return $conteudo->recuperarPontuacao();
+    }
+}
+
+@@07
+O que aprendemos?
+
+Nesta aula, aprendemos:
+Que cada classe deve conhecer e ser responsável por suas próprias regras de negócio
+Que o princípio Aberto/Fechado (OCP) diz que um sistema deve ser aberto para a extensão, mas fechado para a modificação
+Isso significa que devemos poder criar novas funcionalidades e estender o sistema sem precisar modificar muitas classes já existentes
+Uma classe que tende a crescer "para sempre" é uma forte candidata a sofrer alguma espécie de refatoração
