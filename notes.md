@@ -653,3 +653,290 @@ Nesta aula, aprendemos:
 Que, embora a assinatura de um método esteja sendo respeitada em uma herança, ainda assim podemos estar quebrando algum contrato
 Que o Princípio de Substituição de Liskov (LSP) diz que devemos poder substituir classes base por suas classes derivadas em qualquer lugar, sem problema
 Que não devemos alterar um comportamento de um método estendido, mesmo que a assinatura seja mantida
+
+#### 28/02/2024
+
+@05-Encapsulando melhor
+
+@@01
+Projeto da aula anterior
+
+Caso queira, você pode baixar aqui o projeto do curso no ponto em que paramos na aula anterior.
+
+https://caelum-online-public.s3.amazonaws.com/1315-php-solid/04/aula-4-completa.zip
+
+@@02
+Assistindo com simplicidade
+
+[00:00] Olá pessoal. Bem-vindos de volta a mais um capítulo desse nosso treinamento de SOLID, e está na hora de atacarmos esse acoplamento com a implementação de curso ou de AluraMais, enfim nossa classe Assistidor ainda está bem acoplada e não do jeito bom.
+[00:18] Então vamos lá, a primeira coisa que eu quero fazer é encapsular um método assistir no meu curso, e esse método assistir vai simplesmente marcar todos os vídeos como assistidos. Vou lá na minha classe Curso e vou criar no final dela um método com o pubf , dei “Enter” , PhpStorm já monta aqui para mim o esqueleto public function assistir (). Aqui, tudo que eu vou fazer foreach ($this->vídeo as $video) { $video->assistir ().
+
+[01:00] Posso inclusive chamar o nosso método recuperarVideos caso tenha alguma diferença, caso precise manipular futuramente os vídeos, eu já estou aqui utilizando o nosso getter.
+
+[01:10] Agora, a nossa classe Curso tem seu próprio método assistir, a nossa classe Curso consegue ser assistida, ou seja, eu posso chegar para o curso e dizer: quero assistir esse curso e ele vai marcar todos os vídeos como assistidos.
+
+[01:29] Então, aqui agora, no Assistidor, eu não dependo mais da implementação de assistir um curso, de pegar a cada vídeo, assistir vídeo a vídeo agora eu só dependo da interface $curso_>assistir(), só isso e nada além disso.
+
+[01:46] Eu posso remover foreach ($curso->recuperarVideos () as $video){ $video ->assistir();}. Se em algum momento, eu além de assistir todos os vídeos, precisar marcar os exercícios como finalizados, por exemplo, eu vou modificar na classe Curso e não na classe Assistidor, não na classe que utiliza o curso.
+
+[02:02] Então agora, eu encapsulei a lógica de assistir meu curso. Com isso, eu garanto que o meu curso, que meu assistidor, consiga trabalhar tanto com AluraMais quanto com curso de forma simples, eu estou dependendo da interface desse método $assistir.
+
+[02:19] E repara, tanto “Curso” quanto “AlluraMais”, agora possuem esse método assistir e outra coisa que eles têm em comum é que ambos implementam interface Pontuável, tanto AluraMais quanto o Curso. Então eu posso adicionar aqui nessa interface Pontuavel public function assistir.
+
+[02:41] Se eu fizer isso, aqui em Assistidor eu posso ter um único método, o public function assistir, que vai assistir qualquer conteúdo que seja pontuável, eu posso chamar o meu assistir.
+
+[02:58] Com isso, eu não dependo mais da implementação de cada um dos meus conteúdos, eu dependo agora da interface deles, do que eles me fornecem de funcionalidade que é o método assistir. E, obviamente, isso também possui um nome. Esse princípio já foi bem definido e é sobre ele que vamos conversar no próximo vídeo.
+
+@@03
+Expondo o necessário
+
+A nossa classe que era responsável por assistir os conteúdos precisava conhecer a implementação de cada um dos conteúdos, para marcá-los como assistidos.
+De qual conceito da orientação a objetos nós estamos fazendo mau uso?
+
+Selecione uma alternativa
+
+a orientação a objetos nós estamos fazendo mau uso?
+
+Alternativa correta
+Encapsulamento
+ 
+Alternativa correta! Nossa funcionalidade de assistir cada conteúdo não estava encapsulada.
+Alternativa correta
+Polimorfismo
+ 
+Alternativa correta
+Abstração
+ 
+Alternativa correta
+Herança
+
+@@04
+Dependency Inversion Principle
+
+[00:00] Olá, pessoal. Bem-vindos de volta, e no último vídeo implementamos e separamos, na verdade encapsulamos uma parte, uma funcionalidade na nossa classe Curso, e deixamos de depender da implementação dela, de saber como que a lógica de assistir funciona, passamos a depender da interface, do método que ela fornece para nós. Esse princípio é chamado de Dependency Inversion Principle, ou Princípio da Inversão de Dependência.
+[00:28] Aqui tem uma frase interessante que pergunta: você soldaria uma lâmpada em uma tomada diretamente no fio elétrico de uma parede, você faria isso aqui? Não, você usa o interruptor, você não pega os fios de cada aparelho eletrônico e solda lá nos fios dentro da parede. Não, você usa a interface que está ali disponível para você, que é o interruptor.
+
+[00:54] Então, esse princípio, ele diz que, na verdade, ele tem duas partes, ele diz que módulos de alto nível não devem depender de módulos de baixo nível, e que ambos devem depender de abstrações.
+
+[01:09] Essa é uma parte, e uma parte um pouco mais complicada do conceito, do princípio, mas a segunda parte diz que abstrações não devem depender de implementações, implementações devem depender de abstrações. Isso, nos tempos modernos, basicamente foi traduzido para: classes concretas devem depender de interfaces e classes abstratas, mas classes abstratas e interfaces não devem depender de classes concretas.
+
+[01:37] Mas, não necessariamente precisamos depender da estrutura de linguagem interface ou de uma classe abstrata, podemos depender de uma classe concreta, desde que estejamos dependendo da interface dessa classe, que estejamos dependendo, por exemplo, só do método assistir de Curso, por exemplo.
+
+[01:59] Isso não teria problema, agora se estamos dependendo de como o assistir funciona, ou seja, recuperaVideos, em cada vídeo chamo método assistir, aí temos um problema, porque se essa implementação mudar, o nosso código vai quebrar. Esse é o problema, é por isso que devemos inverter a dependência, devemos passar a depender das interfaces.
+
+[02:20] Para isso, óbvio, existe a construção de linguagem para nos ajudar, existem as classes abstratas que podem nos ajudar, mas não se atente ao fato de que você só pode depender de interfaces ou de classes abstratas. Não, não vamos ser radicais. Você não pode depender implementações concretas de algoritmos que estejam presentes em outras classes, esse é o problema dessa classe.
+
+[02:47] Um exemplo muito clássico, além desse que demos aqui, é um exemplo de como se você estivesse utilizando banco de dados. Ao invés de você receber como parâmetro em algum lugar que você precisa da conexão, ao invés de você receber uma Instância de conexão com uma SQL, recebo a instância de conexão com qualquer banco de dados relacional ou não inclusive.
+
+[03:11] Dessa forma, se você precisar mudar, migrar de banco de dados, você não precisa alterar essa parte do código. Esse é um exemplo bem clássico, que você provavelmente vai encontrar nos seus estudos.
+
+[03:22] Inversão de Dependência é um princípio muito simples teoricamente, mas muitas das vezes não utilizamos, não é tão simples de aplicar, então também recomendo que você estude com bastante afinco, pesquise um pouco mais por fora, abra dúvidas no fórum.
+
+[03:37] Vamos implementar um pouco, uma outra modificação porque isso me incomoda muito não sei se está te incomodando, mas eu tenho uma interface Pontuavel, ou seja, quem implementa ela contém pontos, consegue recuperar a pontuação dela. Agora, quem é pontuável necessariamente é assistível? Posso assistir qualquer coisa que tenha ponto? Não. Nós vamos conversar sobre isso no próximo vídeo.
+
+@@05
+Vantagem ao depender de interfaces
+
+No último vídeo, aprendemos o conceito de Dependency Inversion Principle. Muitas vezes este conceito é interpretado de forma rasa, dizendo que devemos depender apenas de classes abstratas e interfaces (a construção de linguagem interface). Na verdade, devemos depender de interfaces em geral, ou seja, não devemos conhecer como determinado método é implementado.
+Que vantagem temos ao depender de interfaces e não de implementações?
+
+Depender de implementações pega mal na comunidade de hypes
+ 
+Alternativa correta
+Caso uma determinada implementação mude, não seremos afetados, pois dependemos apenas de sua interface
+ 
+Alternativa correta! Se um método muda a forma como realiza sua tarefa, desde que a interface se mantenha, não vamos precisar nos preocupar nem em editar o nosso código.
+Alternativa correta
+Ao depender de interfaces, temos gráficos mais interessantes, gerados por ferramentas automatizadas
+
+@@06
+Separando as interfaces
+
+[00:00]Olá pessoal, sejam muito bem-vindos de volta, e como eu falei no último vídeo, public function recuperarPotuacao(): int; public function assistir ():void; está muito desagradável.
+[00:06] Imagina que eu tenho além de Curso e AluraMais, eu também tenho uma classe de dúvida no fórum, e quando eu respondo uma dúvida no fórum eu também ganho uma pontuação, então ela implementa a interface Pontuavel, mas eu também tenho como assistir uma dúvida no fórum? Não é assistível. Então, eu obrigaria a minha classe dúvida do fórum a implementar o método assistir e não fazer nada, só para poder implementar essa interface.
+
+[00:36] Isso não parece nada legal, então vamos criar uma nova interface, vamos separar essa interface Pontuavel em duas. Eu vou chamar de Assistível, eu posso apagar, vou remover esse código public function assistir ():void da interface Pontuável adicionar na interface Assistível.
+
+[00:59] Já tenho aqui a minha interface, de qualquer conteúdo que seja assistível, que tenha um método assistir. Então, posso vir aqui, além de implementar Pontuavel, implementar Assistível, o meu Curso tem pontuação e tem método assistir, a mesma coisa a AluraMais, implementa Pontuavel e Assistivel, sem problema.
+
+[01:21] Com isso, eu consigo fazer com que outras classes, por exemplo, uma dúvida no fórum implemente a interface Pontuavel, mas não precise implementar o método assistir, ela não é Assistivel. Não devemos nunca forçar que uma classe implemente um método de uma interface só para atender alguns requisitos. Isso não é interessante.
+
+[01:42] Então, essa simples modificação, esse conceito tão simples, também é um princípio bem conhecido, e um princípio que vale a pena comentar e é sobre ele que vamos falar no próximo vídeo.
+
+@@07
+Interfaces grandes
+
+Ao termos interfaces com muitos métodos, podemos nos deparar com alguns problemas.
+Das alternativas abaixo, qual é um problema causado por esta abordagem?
+
+qual é um problema causado por esta abordagem?
+
+Alternativa correta
+Podemos ter arquivos maiores do que a tela do monitor pode exibir
+ 
+Alternativa correta
+Podemos ter bugs inesperados
+ 
+Alternativa correta
+Podemos ter classes que implementam métodos de forma errada, ou só implementam sem funcionalidade nenhuma
+ 
+Alternativa correta! Tendo interfaces com métodos demais, às vezes nem relacionados, pode fazer com que as classes que venham a implementar precisem definir métodos que não façam sentido.
+
+@@08
+Interface Segragation Principle
+
+[00:00] Olá pessoal, bem-vindos de volta. No último vídeo, fizemos uma implementação bem simples, mas essa simples implementação é demonstração de um padrão bem conhecido, um princípio bem conhecido, o Princípio de Interface Segregation ou Princípio de Segregação de Interface, e essa imagem exemplifica exatamente que queremos.
+[00:22] Temos aqui um açaí, podemos tomar um açaí com canudo, mas tem bananas, outras frutas, granola, seja lá o que você gostar de colocar no açaí. Então, nós temos algo para beber, algo que conseguimos beber utilizando canudo, e algo que conseguimos comer.
+
+[00:38] Então, nós temos duas interfaces, uma interface de algo comestível, e algo que eu posso beber, não uma única interface de comer e beber, não, eu tenho duas interfaces e aqui essa implementação específica implementa as duas.
+
+[00:53] Esse princípio foi cunhado também pelo Uncle Bobby. Esse princípio diz que uma classe não pode ser forçada a depender de métodos que ela não utilizará, como seria o caso de uma dúvida ter que implementar o método assistir.
+
+[01:08] Ela não vai utilizar o método assistir uma dúvida não pode ser assistida, então, ela teria que implementar esse método para atender a interface, mas esse método seria inútil. Isso não é legal, pois faz com que tenhamos métodos inúteis e nos torna dependentes de métodos que não vão ser executados.
+
+[01:26] Se eu passasse uma dúvida para um método que espera algum conteúdo assistível, que na época, antes de fazermos a implementação era pontuável, poderiamos ter um comportamento inesperado, o que também quebra Princípio de Substituição de Liskov que já conversamos antes.
+
+[01:42] Então, repara que todos esses conceitos que trabalhamos aqui estão interligados, todos esses conceitos conversam entre si e a junção nesses conceitos é chamada de SOLID. O S de Single Responsibility Principle, Open/Closed Principle é o O, L de Liskov Substitute Principle, I de Interface Segregation Principle e D de Dependency Inversion Principle.
+
+[02:16] Todos esses conceitos, todos esses princípios de boas práticas em Orientação a Objetos formam o acrônimo SOLID. E com isso, se você tentar seguir todos esses princípios, você realmente alcança um código mais sólido, um código mais manutenível, mais bem testável, enfim, você atinge um estado da arte mais interessante.
+
+[02:37] E uma vez, um grande mestre do desenvolvimento da comunidade de desenvolvimento PHP aqui no Brasil, Júnior Grossi, ele falou que SOLID não é um processo, não é o processo. SOLID é o objetivo.
+
+[02:50] Você mira em escrever um código SOLID, e com isso o seu processo vai ser otimizado, você vai acabar escrevendo código mais bem escrito, um código melhor por estar tentando alcançar o objetivo de escrever um código SOLID. Ele também diz, e eu concordo com ele, que é impossível escrever um código 100% SOLID.
+
+[03:11] Vou dar um exemplo bem rápido do nosso projeto que é tão simples. O nosso Curso, além de ter a regra de um vídeo tem a regra de assistir, então meio que demos uma quebrada no princípio do S, sim, e está ok, porque tudo está relacionado ao vídeo.
+
+[03:29] Então, você tem que medir, não pode ser extremista, tentar separar classes para qualquer coisa que às vezes nem faz sentido, mas é interessante você tentar atingir um código SOLID, atingir esses princípios, não quebrar esses princípios.
+
+@@09
+Definição do ISP
+
+Vimos no último vídeo que, ao separar as interfaces, implementamos o Interface Segregation Principle.
+Qual a definição formal deste princípio?
+
+Classes devem ter um e apenas um motivo para mudar
+ 
+Alternativa correta
+Implementações devem depender de abstrações e não o contrário
+ 
+Alternativa errada! Esta é uma simplificação do DIP.
+Alternativa correta
+Classes não devem ser obrigadas a implementar métodos que não irão precisar
+ 
+Alternativa correta! Uma classe não deve ser obrigada a implementar um método de determinada interface, se ele não será útil. Para isso, uma interface deverá ser extraída apenas com os métodos necessários.
+
+10
+Consolidando o seu conhecimento
+
+Chegou a hora de você pôr em prática o que foi visto na aula. Para isso, execute os passos listados abaixo.
+1) Adicione o método assistir na interface Pontuavel:
+
+interface Pontuavel
+{
+    public function recuperarPontuacao(): int;
+    public function assistir(): void;
+}COPIAR CÓDIGO
+2) Implemente este novo método na classe Curso:
+
+public function assistir(): void
+{
+    foreach ($this->videos as $video) {
+        $video->assistir();
+    }
+}COPIAR CÓDIGO
+3) Faça com que a classe Assistidor dependa apenas na interface Pontuavel:
+
+<?php
+
+namespace Alura\Solid\Service;
+
+use Alura\Solid\Model\Pontuavel;
+
+class Assistidor
+{
+    public function assistir(Pontuavel $conteudo)
+    {
+        $conteudo->assistir();
+    }
+}COPIAR CÓDIGO
+4) Note que não faz sentido o método assistir na interface Pontuavel. Remova-o desta interface e crie uma interface:
+
+<?php
+
+namespace Alura\Solid\Model;
+
+interface Assistivel
+{
+    public function assistir(): void;
+}COPIAR CÓDIGO
+5) Faça com que a classe Curso implemente esta nova interface:
+
+class Curso implements Pontuavel, Assistivel
+// ...COPIAR CÓDIGO
+6) Implemente-a também na classe Video:
+
+class Video implements Assistivel
+// ...COPIAR CÓDIGO
+7) Faça com que a classe Assistidor dependa desta nova interface:
+
+<?php
+
+namespace Alura\Solid\Service;
+
+use Alura\Solid\Model\Assistivel;
+
+class Assistidor
+{
+    public function assistir(Assistivel $conteudo)
+    {
+        $conteudo->assistir();
+    }
+}
+
+Continue com os seus estudos, e se houver dúvidas, não hesite em recorrer ao nosso fórum!
+
+@@11
+Projeto do curso
+
+Caso queira, você pode baixar aqui o projeto completo implementado neste curso.
+
+https://caelum-online-public.s3.amazonaws.com/1315-php-solid/05/aula-5-completa.zip
+
+@@12
+O que aprendemos?
+
+Nesta aula, aprendemos:
+Que é mais interessante e mais seguro para o nosso código depender de interfaces (classes abstratas, assinaturas de métodos e interfaces em si) do que das implementações de uma classe
+Que as interfaces são menos propensas a sofrer mudanças enquanto implementações podem mudar a qualquer momento
+Que o Princípio de Inversão de Dependência (DIP) diz que implementações devem depender de abstrações e abstrações não devem depender de implementações
+Que as interfaces devem definir apenas os métodos que fazem sentido para seu contexto
+Que uma classe pode implementar diversas interfaces
+Que o Princípio de Segregação de Interfaces (ISP) diz que uma classe não deve ser obrigada a implementar um método que ela não precisa;
+Os conceitos aprendidos neste treinamento formam o acrônimo SOLID
+Single Responsibility Principle
+Open Closed Principle
+Liskov Substituition Principle
+Interface Segregation Principle
+Dependency Inversion Principle
+
+@@13
+Conclusão
+
+[00:00] Olá, pessoal. Bem-vindos ao final desse treinamento de SOLID e boas práticas em Orientação a Objetos em PHP. Primeiro queria te parabenizar por chegar ao final, esse conteúdo é muito importante para sua carreira como desenvolvedor ou desenvolvedora, independente da área de desenvolvimento que você vai seguir, as boas práticas sempre devem ser seguidas.
+[00:19] Se você for trabalhar com outro paradigma de programação, que não orientado a objetos, com certeza existem boas práticas e princípios a seguir, e os princípios SOLID são os princípios mais famosos, e me arrisco a dizer, os mais importantes do desenvolvimento orientado a objetos.
+
+[00:37] Nós vimos nesse treinamento todos eles: o Princípio de Responsabilidade Única, Aberto/Fechado, Substituição de Liskov, Segregação de Interface, Inversão de Dependência, e conforme, fomos passando por cada princípio, vimos as vantagens de cada um e como implementar, e as vantagens dessa implementação em si.
+
+[00:56] No final chegamos com um código bem mais manutenível, com um código mais extensível. Se precisarmos implementar novos conteúdos que tenham pontuação, temos uma classe Pontuavel, se precisarmos implementar novos conteúdos que tenham método de assistir, sejam assistíveis, criamos uma interface para isso.
+
+[01:19] Nosso Feedback agora é separado em uma classe só para ele para que tenha suas próprias regras, nosso Curso não trata mais disso, nosso Curso agora tem sua própria pontuação, tem encapsulado seu método de assistir, enfim fizemos muitas modificações, trabalhamos com bastante coisa e tornamos nosso código um pouco mais sucinto, um pouco mais SOLID.
+
+[01:43] Como eu comentei no vídeo passado, um grande mestre do desenvolvimento de software, Júnior Grossi, comenta que, ele diz que SOLID não é o processo, SOLID não é algo que você vai trabalhando, SOLID é o objetivo, você tenta alcançar o código SOLID seguindo os princípios;
+
+[02:00] E não é viável, não é corriqueiro, você ter um código 100% SOLID, seguindo 100% todos os princípios. Então, não se martirize por ter algum problema, alguma coisa que parece infringir algum dos princípios, desde que faça sentido.
+
+[02:18] Como, por exemplo, no nosso caso, o curso parece ter algumas responsabilidades a mais, parece ter mais de um motivo para mudar, mas todos esses são relacionados à classe Curso, então faz sentido.
+
+[02:29] Existe uma frase bastante famosa, não me lembro qual foi o filósofo que falou, mas que a simplicidade é o mais alto grau de sofisticação, então não tente complicar seu código para implementar vários princípios e padrões. Mantenha o seu código simples, mantenha o seu código sucinto, mantenha seu código SOLID.
+
+[02:55] Espero que você tenha curtido e aproveitado esse treinamento e espero te ver em Futuros treinamentos aqui na Alura. Forte abraço e até a próxima.
